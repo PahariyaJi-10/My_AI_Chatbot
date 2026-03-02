@@ -20,6 +20,16 @@
     flex-direction: column;
 }
 
+.typing {
+    align-self: flex-start;
+    background-color: #202123;
+    color: #aaa;
+    padding: 8px 14px;
+    border-radius: 15px;
+    margin: 5px 0;
+    font-size: 14px;
+    font-style: italic;
+}
         .chat-box {
             flex: 1;
             padding: 15px;
@@ -96,6 +106,7 @@
     <div class="input-area">
         <input type="text" id="user-input" placeholder="Type a message..." />
         <button onclick="sendMessage()">Send</button>
+        <button onclick="clearChat()">Clear</button>
     </div>
 </div>
 
@@ -116,7 +127,13 @@ function addMessage(text, sender) {
     chatBox.appendChild(messageDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
+async function clearChat() {
+    await fetch("http://127.0.0.1:5000/clear", {
+        method: "POST"
+    });
 
+    document.getElementById("chat-box").innerHTML = "";
+}
 async function loadHistory() {
     const response = await fetch("http://127.0.0.1:5000/history");
     const data = await response.json();
@@ -137,7 +154,16 @@ async function sendMessage() {
 
     addMessage(message, "user");
     inputField.value = "";
+const chatBox = document.getElementById("chat-box");
 
+// Show typing indicator
+const typingDiv = document.createElement("div");
+typingDiv.classList.add("typing");
+typingDiv.id = "typing-indicator";
+typingDiv.innerText = "AI is typing...";
+chatBox.appendChild(typingDiv);
+
+chatBox.scrollTop = chatBox.scrollHeight;
     const response = await fetch("http://127.0.0.1:5000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

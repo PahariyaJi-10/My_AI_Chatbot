@@ -33,7 +33,14 @@ def init_db():
     conn.close()
 
 init_db()
-
+@app.route("/clear", methods=["POST"])
+def clear_chat():
+    conn = sqlite3.connect("chat.db")
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM messages")
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "cleared"})
 @app.route("/history", methods=["GET"])
 def get_history():
     conn = sqlite3.connect("chat.db")
