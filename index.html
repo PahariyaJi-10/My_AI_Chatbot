@@ -147,23 +147,29 @@ async function loadHistory() {
 }
 
 async function sendMessage() {
+    const chatBox = document.getElementById("chat-box");
     const inputField = document.getElementById("user-input");
-    const message = inputField.value.trim();
+    const message = inputField.value;
 
     if (!message) return;
 
-    addMessage(message, "user");
     inputField.value = "";
-const chatBox = document.getElementById("chat-box");
 
-// Show typing indicator
-const typingDiv = document.createElement("div");
-typingDiv.classList.add("typing");
-typingDiv.id = "typing-indicator";
-typingDiv.innerText = "AI is typing...";
-chatBox.appendChild(typingDiv);
+    // Add user message
+    const userDiv = document.createElement("div");
+    userDiv.classList.add("message", "user");
+    userDiv.innerText = message;
+    chatBox.appendChild(userDiv);
 
-chatBox.scrollTop = chatBox.scrollHeight;
+    // Show typing indicator
+    const typingDiv = document.createElement("div");
+    typingDiv.classList.add("typing");
+    typingDiv.id = "typing-indicator";
+    typingDiv.innerText = "AI is typing...";
+    chatBox.appendChild(typingDiv);
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+
     const response = await fetch("http://127.0.0.1:5000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -171,9 +177,22 @@ chatBox.scrollTop = chatBox.scrollHeight;
     });
 
     const data = await response.json();
-    addMessage(data.reply, "bot");
-}
 
+    // ✅ REMOVE typing indicator correctly
+    const typingElement = document.getElementById("typing-indicator");
+    if (typingElement) {
+        typingElement.remove();
+    }
+
+    // Add bot reply
+    const botDiv = document.createElement("div");
+    botDiv.classList.add("message", "bot");
+    botDiv.innerHTML = marked.parse(data.reply);
+    chatBox.appendChild(botDiv);
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+  
 document.getElementById("user-input")
     .addEventListener("keypress", function(e) {
         if (e.key === "Enter") {
