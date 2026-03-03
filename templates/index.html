@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #343541;
+        }
+
+        .chat-container {
+    width: 100%;
+    height: 100vh;
+    background: #444654;
+    display: flex;
+    flex-direction: column;
+}
+
+.typing {
+    align-self: flex-start;
+    background-color: #202123;
+    color: #aaa;
+    padding: 8px 14px;
+    border-radius: 15px;
+    margin: 5px 0;
+    font-size: 14px;
+    font-style: italic;
+}
+        .chat-box {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            max-width: 75%;
+            word-wrap: break-word;
+        }
+
+        .user {
+            align-self: flex-end;
+            background-color: #10a37f;
+            color: white;
+        }
+
+        .bot {
+            align-self: flex-start;
+            background-color: #202123;
+            color: white;
+        }
+
+        .input-area {
+            display: flex;
+            padding: 10px;
+            background-color: #40414f;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button {
+            margin-left: 10px;
+            padding: 10px 15px;
+            border: none;
+            background-color: #10a37f;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0d8c6d;
+        }
+
+        pre {
+            background: #111;
+            padding: 10px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="chat-container">
+    <div id="chat-box" class="chat-box"></div>
+
+    <div class="input-area">
+        <input type="text" id="user-input" placeholder="Type a message..." />
+        <button onclick="sendMessage()">Send</button>
+        <button onclick="clearChat()">Clear</button>
+    </div>
+</div>
+
+<script>
+
+function addMessage(text, sender) {
+    const chatBox = document.getElementById("chat-box");
+
+    const messageDiv = document.createElement("div");
+    messageDiv.classList.add("message", sender);
+
+    if (sender === "bot") {
+        messageDiv.innerHTML = marked.parse(text);
+    } else {
+        messageDiv.innerText = text;
+    }
+
+    chatBox.appendChild(messageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+async function clearChat() {
+    await fetch("http://127.0.0.1:5000/clear", {
+        method: "POST"
+    });
+
+    document.getElementById("chat-box").innerHTML = "";
+}
+async function loadHistory() {
+    const response = await fetch("http://127.0.0.1:5000/history");
+    const data = await response.json();
+
+    const chatBox = document.getElementById("chat-box");
+    chatBox.innerHTML = "";
+
+    data.forEach(msg => {
+        addMessage(msg.message, msg.role);
+    });
+}
+
+async function sendMessage() {
+    const chatBox = document.getElementById("chat-box");
+    const inputField = document.getElementById("user-input");
+    const message = inputField.value;
+
+    if (!message) return;
+
+    inputField.value = "";
+
+    // Add user message
+    const userDiv = document.createElement("div");
+    userDiv.classList.add("message", "user");
+    userDiv.innerText = message;
+    chatBox.appendChild(userDiv);
+
+    // Show typing indicator
+    const typingDiv = document.createElement("div");
+    typingDiv.classList.add("typing");
+    typingDiv.id = "typing-indicator";
+    typingDiv.innerText = "AI is typing...";
+    chatBox.appendChild(typingDiv);
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    const response = await fetch("http://127.0.0.1:5000/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: message })
+    });
+
+    const data = await response.json();
+
+    // ✅ REMOVE typing indicator correctly
+    const typingElement = document.getElementById("typing-indicator");
+    if (typingElement) {
+        typingElement.remove();
+    }
+
+    // Add bot reply
+    const botDiv = document.createElement("div");
+    botDiv.classList.add("message", "bot");
+    botDiv.innerHTML = marked.parse(data.reply);
+    chatBox.appendChild(botDiv);
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+  
+document.getElementById("user-input")
+    .addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+            sendMessage();
+        }
+    });
+
+window.onload = loadHistory;
+
+</script>
+
+</body>
+</html>

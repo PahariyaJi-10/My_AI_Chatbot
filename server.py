@@ -4,6 +4,7 @@ from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
+from flask import render_template
 import google.generativeai as genai
 
 # Load environment variables
@@ -39,7 +40,9 @@ def init_db():
 
 
 init_db()
-
+@app.route("/")
+def home():
+    return render_template("index.html")
 @app.route("/")
 def home():
     return "AI Chatbot Backend is Running 🚀"
