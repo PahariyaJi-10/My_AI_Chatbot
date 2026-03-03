@@ -1,25 +1,26 @@
 import os
 import sqlite3
 from datetime import datetime
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from dotenv import load_dotenv
-from flask import render_template
-import google.generativeai as genai
+from google import genai
 
-# Load environment variables
+# ========================
+# LOAD ENV VARIABLES
+# ========================
 load_dotenv()
 
-# Configure Gemini
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# ========================
+# GEMINI CLIENT (NEW SDK)
+# ========================
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-# Create Gemini model
-model = genai.GenerativeModel("gemini-pro")
-
-# Create Flask app
+# ========================
+# FLASK APP
+# ========================
 app = Flask(__name__)
 CORS(app)
-
 
 # ========================
 # DATABASE INITIALIZATION
@@ -38,8 +39,11 @@ def init_db():
     conn.commit()
     conn.close()
 
-
 init_db()
+
+# ========================
+# HOME PAGE (Frontend)
+# ========================
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -56,9 +60,8 @@ def clear_chat():
     conn.close()
     return jsonify({"status": "cleared"})
 
-
 # ========================
-# GET HISTORY
+# GET CHAT HISTORY
 # ========================
 @app.route("/history", methods=["GET"])
 def get_history():
@@ -77,7 +80,6 @@ def get_history():
         })
 
     return jsonify(history)
-
 
 # ========================
 # CHAT API
@@ -100,10 +102,14 @@ def chat_api():
     )
     conn.commit()
 
-    # Send to Gemini
     try:
-        response = model.generate_content(message)
+        # Gemini API call (NEW SDK)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=message,
+        )
         bot_reply = response.text
+
     except Exception as e:
         bot_reply = f"Error: {str(e)}"
 
@@ -116,7 +122,6 @@ def chat_api():
     conn.close()
 
     return jsonify({"reply": bot_reply})
-
 
 # ========================
 # RUN SERVER
