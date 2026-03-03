@@ -40,7 +40,9 @@ def init_db():
 
 init_db()
 
-
+@app.route("/")
+def home():
+    return "AI Chatbot Backend is Running 🚀"
 # ========================
 # CLEAR CHAT
 # ========================
