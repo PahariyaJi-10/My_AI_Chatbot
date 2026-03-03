@@ -128,14 +128,14 @@ function addMessage(text, sender) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 async function clearChat() {
-    await fetch("http://127.0.0.1:5000/clear", {
+    await fetch("/clear", {
         method: "POST"
     });
 
     document.getElementById("chat-box").innerHTML = "";
 }
 async function loadHistory() {
-    const response = await fetch("http://127.0.0.1:5000/history");
+    const response = await fetch("/history");
     const data = await response.json();
 
     const chatBox = document.getElementById("chat-box");
@@ -170,7 +170,7 @@ async function sendMessage() {
 
     chatBox.scrollTop = chatBox.scrollHeight;
 
-    const response = await fetch("http://127.0.0.1:5000/chat", {
+    const response = await fetch("/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: message })
