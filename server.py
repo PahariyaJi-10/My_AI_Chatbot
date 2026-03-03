@@ -89,4 +89,5 @@ def chat_api():
 
 if __name__ == "__main__":
     print("Starting Flask Server...")
-    app.run(debug=True)
+    if __name__ == "__main__":
+     app.run()
