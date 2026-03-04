@@ -19,7 +19,7 @@ client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 # ========================
 # FLASK APP
 # ========================
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates")
 CORS(app)
 
 # ========================
