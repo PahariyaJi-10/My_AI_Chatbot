@@ -32,21 +32,21 @@ https://my-ai-chatbot-1-n3w0.onrender.com
 
 Backend:
 
-Python
-Flask
-Flask-CORS
+Python,
+Flask,
+Flask-CORS,
 SQLite
 
 AI:
-Google Gemini API (google-genai)
-Frontend
-HTML
-CSS
-JavaScript
+Google Gemini API (google-genai),
+Frontend,
+HTML,
+CSS,
+JavaScript,
 Marked.js (Markdown rendering)
 
 Deployment:
-Render
+Render,
 GitHub
 
 📌 Future Improvements:
