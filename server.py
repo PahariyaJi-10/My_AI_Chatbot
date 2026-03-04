@@ -12,7 +12,7 @@ from google import genai
 load_dotenv()
 
 # ========================
-# GEMINI CLIENT (NEW SDK)
+# GEMINI CLIENT
 # ========================
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
@@ -28,6 +28,7 @@ CORS(app)
 def init_db():
     conn = sqlite3.connect("chat.db")
     cursor = conn.cursor()
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,13 +37,14 @@ def init_db():
             timestamp TEXT
         )
     """)
+
     conn.commit()
     conn.close()
 
 init_db()
 
 # ========================
-# HOME PAGE (Frontend)
+# HOME PAGE
 # ========================
 @app.route("/")
 def home():
@@ -53,25 +55,35 @@ def home():
 # ========================
 @app.route("/clear", methods=["POST"])
 def clear_chat():
+
     conn = sqlite3.connect("chat.db")
     cursor = conn.cursor()
+
     cursor.execute("DELETE FROM messages")
+
     conn.commit()
     conn.close()
+
     return jsonify({"status": "cleared"})
 
 # ========================
-# GET CHAT HISTORY
+# GET HISTORY
 # ========================
 @app.route("/history", methods=["GET"])
 def get_history():
+
     conn = sqlite3.connect("chat.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT role, message, timestamp FROM messages ORDER BY id ASC")
+
+    cursor.execute(
+        "SELECT role, message, timestamp FROM messages ORDER BY id ASC"
+    )
+
     rows = cursor.fetchall()
     conn.close()
 
     history = []
+
     for row in rows:
         history.append({
             "role": row[0],
@@ -86,6 +98,7 @@ def get_history():
 # ========================
 @app.route("/chat", methods=["POST"])
 def chat_api():
+
     data = request.json
     message = data.get("message")
 
@@ -100,17 +113,46 @@ def chat_api():
         "INSERT INTO messages (role, message, timestamp) VALUES (?, ?, ?)",
         ("user", message, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     )
+
     conn.commit()
 
     try:
-        # Gemini API call (NEW SDK)
+
+        # Get last 10 messages (memory)
+        cursor.execute(
+            "SELECT role, message FROM messages ORDER BY id DESC LIMIT 10"
+        )
+
+        rows = cursor.fetchall()
+
+        rows.reverse()
+
+        conversation = []
+
+        for role, msg in rows:
+
+            if role == "user":
+                conversation.append({
+                    "role": "user",
+                    "parts": [{"text": msg}]
+                })
+
+            else:
+                conversation.append({
+                    "role": "model",
+                    "parts": [{"text": msg}]
+                })
+
+        # Send to Gemini
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=message,
+            contents=conversation
         )
+
         bot_reply = response.text
 
     except Exception as e:
+
         bot_reply = f"Error: {str(e)}"
 
     # Save bot reply
@@ -118,6 +160,7 @@ def chat_api():
         "INSERT INTO messages (role, message, timestamp) VALUES (?, ?, ?)",
         ("bot", bot_reply, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     )
+
     conn.commit()
     conn.close()
 
@@ -127,5 +170,7 @@ def chat_api():
 # RUN SERVER
 # ========================
 if __name__ == "__main__":
+
     print("Starting Flask Server...")
+
     app.run(host="0.0.0.0", port=5000)
