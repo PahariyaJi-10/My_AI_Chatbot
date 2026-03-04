@@ -59,3 +59,12 @@ Chat export (PDF / text)
 Voice input support
 File upload (chat with documents)
 
+You can refer to screenshots:-
+<img width="1888" height="755" alt="image" src="https://github.com/user-attachments/assets/206fa80c-8030-4052-ad8e-e1fea9f99838" />
+<img width="1893" height="769" alt="image" src="https://github.com/user-attachments/assets/9216d804-b78b-4758-b1f0-ae922d4cd563" />
+<img width="1864" height="703" alt="image" src="https://github.com/user-attachments/assets/e12c233b-c4e6-4e06-98c3-d672557bab4b" />
+<img width="1853" height="363" alt="image" src="https://github.com/user-attachments/assets/87f7b114-6b2c-45e0-8c8c-996bb3e44eec" />
+
+
+
+
